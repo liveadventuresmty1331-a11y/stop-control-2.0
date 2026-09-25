@@ -531,3 +531,5 @@ export async function toggleItemStatus(type: string, id: string) {
       throw new Error("Catálogo no reconocido");
   }
 }
+
+export { memoryStore };

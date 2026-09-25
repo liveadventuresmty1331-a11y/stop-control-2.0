@@ -44,8 +44,8 @@ export default function Navbar({ user }: NavbarProps) {
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 sm:px-6 py-2.5">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Brand & Nav Links */}
-        <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+        <div className="flex items-center gap-3 sm:gap-6 w-full md:w-auto justify-between md:justify-start">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group shrink-0">
             <div className="h-8 w-8 rounded-lg bg-rose-600 flex items-center justify-center font-black text-base text-white shadow-md shadow-rose-900/30 group-hover:bg-rose-500 transition">
               ST
             </div>
@@ -60,7 +60,7 @@ export default function Navbar({ user }: NavbarProps) {
           </Link>
 
           {/* Menú de Navegación Principal */}
-          <nav className="flex items-center gap-1 text-xs">
+          <nav className="flex items-center gap-1 text-xs overflow-x-auto py-1 max-w-full">
             {canSeeDashboard && (
               <Link
                 href="/dashboard"

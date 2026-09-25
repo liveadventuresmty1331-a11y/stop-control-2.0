@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { SessionUser } from "./auth";
-import { getAllCatalogs } from "./catalogs-service";
+import { getAllCatalogs, memoryStore } from "./catalogs-service";
 
 export interface CreateStopInput {
   machineId: string;
@@ -542,6 +542,10 @@ export async function createStop(input: CreateStopInput, session: SessionUser) {
     };
 
     memoryStops.unshift(newMemoryStop);
+    const machIdx = memoryStore.machines.findIndex((m) => m.id === machineId);
+    if (machIdx !== -1) {
+      memoryStore.machines[machIdx].status = "STOPPED";
+    }
     return newMemoryStop;
   }
 }
@@ -826,6 +830,10 @@ export async function closeStop(
     const targetMachine = allCatalogs.machines.find((m) => m.id === stop.machineId);
     if (targetMachine) {
       targetMachine.status = "OPERATING";
+    }
+    const machIndex = memoryStore.machines.findIndex((m) => m.id === stop.machineId);
+    if (machIndex !== -1) {
+      memoryStore.machines[machIndex].status = "OPERATING";
     }
 
     // Asociar datos de técnico si fue seleccionado
