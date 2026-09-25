@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { 
   Activity, 
   ShieldAlert, 
@@ -29,11 +30,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Fase 1: Preparación Lista
+              Fase 3: Autenticación RBAC
             </span>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition shadow-md shadow-rose-900/30"
+            >
+              Iniciar Sesión
+            </Link>
           </div>
         </div>
       </header>
