@@ -18,6 +18,61 @@ export interface CloseStopInput {
   technicianId?: string | null;
 }
 
+export interface HistoryQueryFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  machineId?: string;
+  areaId?: string;
+  processId?: string;
+  stopTypeId?: string;
+  causeId?: string;
+  priorityId?: string;
+  shift?: string;
+  status?: string; // "COMPLETED" | "ACTIVE" | "ALL"
+  search?: string;
+  sortBy?: "startTime" | "duration" | "machine";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+}
+
+export interface StopQueryResultItem {
+  id: string;
+  machineId: string;
+  machine?: { code?: string; name?: string; status?: string; area?: { name?: string } };
+  areaId: string;
+  area?: { name?: string };
+  processId: string;
+  process?: { name?: string };
+  stopTypeId: string;
+  stopType?: { name?: string };
+  causeId: string;
+  cause?: { name?: string; isRepairable?: boolean };
+  priorityId: string;
+  priority?: { name?: string; colorCode?: string | null; level?: number };
+  operatorId: string;
+  operator?: { id?: string; name?: string; email?: string };
+  technicianId?: string | null;
+  technician?: { id?: string; name?: string; email?: string } | null;
+  workOrder?: { id?: string; code?: string; status?: string; notes?: string | null; createdAt?: Date | string } | null;
+  shift?: string | null;
+  startTime: Date | string;
+  endTime?: Date | string | null;
+  duration?: number | null;
+  observations?: string | null;
+  actionTaken?: string | null;
+  status: string;
+  createdAt?: Date | string;
+}
+
+export interface HistoryQueryResult {
+  stops: StopQueryResultItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface MemoryWorkOrder {
   id: string;
   code: string;
@@ -107,6 +162,7 @@ const memoryWorkOrders: MemoryWorkOrder[] = [
 ];
 
 // Almacén en memoria de paros para respaldo cuando PostgreSQL no esté disponible localmente
+const nowMs = Date.now();
 const memoryStops: MemoryStop[] = [
   {
     id: "stop-active-demo",
@@ -121,17 +177,157 @@ const memoryStops: MemoryStop[] = [
     stopTypeId: "type-2",
     stopType: { id: "type-2", name: "No planeado" },
     causeId: "cause-1",
-    cause: { id: "cause-1", name: "Falla mecánica" },
+    cause: { id: "cause-1", name: "Falla mecánica", isRepairable: true },
     priorityId: "priority-3",
-    priority: { id: "priority-3", name: "Alta", colorCode: "#f97316" },
-    startTime: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    priority: { id: "priority-3", name: "Alta", colorCode: "#f97316", level: 3 },
+    startTime: new Date(nowMs - 25 * 60 * 1000).toISOString(),
     endTime: null,
     duration: null,
     observations: "Ruido anormal y vibración en torreta de herramientas",
     actionTaken: null,
     status: "ACTIVE",
     shift: "Matutino",
-    createdAt: new Date().toISOString(),
+    createdAt: new Date(nowMs - 25 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "stop-hist-1",
+    machineId: "mach-1",
+    machine: { id: "mach-1", code: "CNC-01", name: "Torno CNC", status: "OPERATING", active: true },
+    operatorId: "user-2",
+    operator: { id: "user-2", name: "Juan Pérez (Operador)", email: "operador@stopcontrol.local" },
+    technicianId: "user-4",
+    technician: { id: "user-4", name: "Laura Ramos (Mantenimiento)", email: "mantenimiento@stopcontrol.local" },
+    workOrder: memoryWorkOrders[0],
+    areaId: "area-1",
+    area: { id: "area-1", name: "Producción" },
+    processId: "proc-1",
+    process: { id: "proc-1", name: "Corte" },
+    stopTypeId: "type-2",
+    stopType: { id: "type-2", name: "No planeado" },
+    causeId: "cause-1",
+    cause: { id: "cause-1", name: "Falla mecánica", isRepairable: true },
+    priorityId: "priority-3",
+    priority: { id: "priority-3", name: "Alta", colorCode: "#f97316", level: 3 },
+    startTime: new Date(nowMs - 48 * 3600 * 1000).toISOString(),
+    endTime: new Date(nowMs - 48 * 3600 * 1000 + 45 * 60 * 1000).toISOString(),
+    duration: 45,
+    observations: "Sobrecalentamiento en rodamiento frontal",
+    actionTaken: "Alineación de husillo y lubricación de alta velocidad",
+    status: "COMPLETED",
+    shift: "Matutino",
+    createdAt: new Date(nowMs - 48 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "stop-hist-2",
+    machineId: "mach-3",
+    machine: { id: "mach-3", code: "SOLD-01", name: "Soldadora", status: "OPERATING", active: true },
+    operatorId: "user-2",
+    operator: { id: "user-2", name: "Juan Pérez (Operador)", email: "operador@stopcontrol.local" },
+    technicianId: "user-4",
+    technician: { id: "user-4", name: "Laura Ramos (Mantenimiento)", email: "mantenimiento@stopcontrol.local" },
+    workOrder: memoryWorkOrders[1],
+    areaId: "area-2",
+    area: { id: "area-2", name: "Soldadura" },
+    processId: "proc-2",
+    process: { id: "proc-2", name: "Soldadura" },
+    stopTypeId: "type-2",
+    stopType: { id: "type-2", name: "No planeado" },
+    causeId: "cause-2",
+    cause: { id: "cause-2", name: "Falla eléctrica", isRepairable: true },
+    priorityId: "priority-2",
+    priority: { id: "priority-2", name: "Media", colorCode: "#eab308", level: 2 },
+    startTime: new Date(nowMs - 36 * 3600 * 1000).toISOString(),
+    endTime: new Date(nowMs - 36 * 3600 * 1000 + 30 * 60 * 1000).toISOString(),
+    duration: 30,
+    observations: "Arco intermitente en devanado secundario",
+    actionTaken: "Reemplazo de bobina y contactor de potencia",
+    status: "COMPLETED",
+    shift: "Vespertino",
+    createdAt: new Date(nowMs - 36 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "stop-hist-3",
+    machineId: "mach-2",
+    machine: { id: "mach-2", code: "CNC-02", name: "Torno CNC", status: "OPERATING", active: true },
+    operatorId: "user-1",
+    operator: { id: "user-1", name: "Carlos Mendoza (Admin)", email: "admin@stopcontrol.local" },
+    technicianId: null,
+    technician: null,
+    workOrder: memoryWorkOrders[2],
+    areaId: "area-1",
+    area: { id: "area-1", name: "Producción" },
+    processId: "proc-1",
+    process: { id: "proc-1", name: "Corte" },
+    stopTypeId: "type-1",
+    stopType: { id: "type-1", name: "Planeado" },
+    causeId: "cause-5",
+    cause: { id: "cause-5", name: "Ajuste", isRepairable: false },
+    priorityId: "priority-1",
+    priority: { id: "priority-1", name: "Baja", colorCode: "#3b82f6", level: 1 },
+    startTime: new Date(nowMs - 24 * 3600 * 1000).toISOString(),
+    endTime: new Date(nowMs - 24 * 3600 * 1000 + 20 * 60 * 1000).toISOString(),
+    duration: 20,
+    observations: "Ajuste preventivo por cambio de lote de producción",
+    actionTaken: "Ajuste de servomotor y centrado de husillo",
+    status: "COMPLETED",
+    shift: "Nocturno",
+    createdAt: new Date(nowMs - 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "stop-hist-4",
+    machineId: "mach-4",
+    machine: { id: "mach-4", code: "ENS-01", name: "Línea de Ensamble", status: "OPERATING", active: true },
+    operatorId: "user-2",
+    operator: { id: "user-2", name: "Juan Pérez (Operador)", email: "operador@stopcontrol.local" },
+    technicianId: null,
+    technician: null,
+    workOrder: memoryWorkOrders[3],
+    areaId: "area-3",
+    area: { id: "area-3", name: "Ensamble" },
+    processId: "proc-3",
+    process: { id: "proc-3", name: "Ensamble" },
+    stopTypeId: "type-2",
+    stopType: { id: "type-2", name: "No planeado" },
+    causeId: "cause-3",
+    cause: { id: "cause-3", name: "Falta de material", isRepairable: false },
+    priorityId: "priority-2",
+    priority: { id: "priority-2", name: "Media", colorCode: "#eab308", level: 2 },
+    startTime: new Date(nowMs - 12 * 3600 * 1000).toISOString(),
+    endTime: new Date(nowMs - 12 * 3600 * 1000 + 60 * 60 * 1000).toISOString(),
+    duration: 60,
+    observations: "Espera de remaches estructurales desde almacén",
+    actionTaken: "Limpieza de guías y sensores durante tiempo de espera",
+    status: "COMPLETED",
+    shift: "Matutino",
+    createdAt: new Date(nowMs - 12 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: "stop-hist-5",
+    machineId: "mach-5",
+    machine: { id: "mach-5", code: "PINT-01", name: "Cabina de Pintura", status: "OPERATING", active: true },
+    operatorId: "user-3",
+    operator: { id: "user-3", name: "Roberto Gómez (Supervisor)", email: "supervisor@stopcontrol.local" },
+    technicianId: "user-4",
+    technician: { id: "user-4", name: "Laura Ramos (Mantenimiento)", email: "mantenimiento@stopcontrol.local" },
+    workOrder: memoryWorkOrders[4],
+    areaId: "area-4",
+    area: { id: "area-4", name: "Pintura" },
+    processId: "proc-4",
+    process: { id: "proc-4", name: "Pintura" },
+    stopTypeId: "type-2",
+    stopType: { id: "type-2", name: "No planeado" },
+    causeId: "cause-7",
+    cause: { id: "cause-7", name: "Calidad", isRepairable: false },
+    priorityId: "priority-4",
+    priority: { id: "priority-4", name: "Crítica", colorCode: "#ef4444", level: 4 },
+    startTime: new Date(nowMs - 6 * 3600 * 1000).toISOString(),
+    endTime: new Date(nowMs - 6 * 3600 * 1000 + 90 * 60 * 1000).toISOString(),
+    duration: 90,
+    observations: "Desviación en espesor de película de pintura (piel de naranja)",
+    actionTaken: "Sustitución de sello y o-ring en circuito de presión y regulación de flujo",
+    status: "COMPLETED",
+    shift: "Vespertino",
+    createdAt: new Date(nowMs - 6 * 3600 * 1000).toISOString(),
   },
 ];
 
@@ -631,4 +827,336 @@ export async function closeStop(
     memoryStops[stopIndex] = updatedMemoryStop;
     return updatedMemoryStop;
   }
+}
+
+/**
+ * Consulta de historial paginado con filtros avanzados y control RBAC (FASE 7)
+ */
+export async function getStopsHistory(
+  filters: HistoryQueryFilters,
+  session: SessionUser
+): Promise<HistoryQueryResult> {
+  // 1. Validar autenticación
+  if (!session) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  if (session.status !== "ACTIVE") {
+    throw new Error("Usuario inactivo o suspendido");
+  }
+
+  // 2. Construir paginación
+  const page = Math.max(1, Number(filters.page) || 1);
+  const pageSize = Math.max(1, Math.min(100, Number(filters.pageSize) || 10));
+  const skip = (page - 1) * pageSize;
+
+  try {
+    // 3. Construir filtros Prisma
+    const where: Record<string, unknown> = {};
+
+    // Estado: por defecto prioriza COMPLETED si no se especifica
+    if (filters.status && filters.status !== "ALL") {
+      where.status = filters.status;
+    } else if (!filters.status) {
+      where.status = "COMPLETED";
+    }
+
+    // Catálogos
+    if (filters.machineId) where.machineId = filters.machineId;
+    if (filters.areaId) where.areaId = filters.areaId;
+    if (filters.processId) where.processId = filters.processId;
+    if (filters.stopTypeId) where.stopTypeId = filters.stopTypeId;
+    if (filters.causeId) where.causeId = filters.causeId;
+    if (filters.priorityId) where.priorityId = filters.priorityId;
+    if (filters.shift) where.shift = filters.shift;
+
+    // Rango de fechas (startTime)
+    if (filters.dateFrom || filters.dateTo) {
+      const startTimeFilter: { gte?: Date; lte?: Date } = {};
+      if (filters.dateFrom) {
+        const from = new Date(filters.dateFrom);
+        if (!isNaN(from.getTime())) {
+          startTimeFilter.gte = from;
+        }
+      }
+      if (filters.dateTo) {
+        const to = new Date(filters.dateTo);
+        if (!isNaN(to.getTime())) {
+          if (filters.dateTo.length === 10) {
+            to.setHours(23, 59, 59, 999);
+          }
+          startTimeFilter.lte = to;
+        }
+      }
+      where.startTime = startTimeFilter;
+    }
+
+    // Búsqueda textual
+    if (filters.search && filters.search.trim()) {
+      const q = filters.search.trim();
+      where.OR = [
+        { machine: { code: { contains: q, mode: "insensitive" } } },
+        { machine: { name: { contains: q, mode: "insensitive" } } },
+        { operator: { name: { contains: q, mode: "insensitive" } } },
+        { cause: { name: { contains: q, mode: "insensitive" } } },
+        { workOrder: { code: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    // RBAC a nivel de servidor
+    if (session.role === "OPERADOR") {
+      // El operador solo puede consultar sus propios registros
+      where.operatorId = session.id;
+    } else if (session.role === "MANTENIMIENTO") {
+      // Mantenimiento consulta paros técnicos/reparables o donde intervino
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        {
+          OR: [
+            { cause: { isRepairable: true } },
+            { cause: { name: { contains: "mecánica", mode: "insensitive" } } },
+            { cause: { name: { contains: "eléctrica", mode: "insensitive" } } },
+            { cause: { name: { contains: "mantenimiento", mode: "insensitive" } } },
+            { technicianId: session.id },
+            { workOrder: { isNot: null } },
+          ],
+        },
+      ];
+    } else if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR") {
+      throw new Error(`Acceso denegado: El rol ${session.role} no tiene permisos para consultar historial.`);
+    }
+
+    // Ordenamiento
+    let orderBy: Record<string, unknown> = { startTime: "desc" };
+    const sortOrder = filters.sortOrder === "asc" ? "asc" : "desc";
+
+    if (filters.sortBy === "duration") {
+      orderBy = { duration: sortOrder };
+    } else if (filters.sortBy === "machine") {
+      orderBy = { machine: { code: sortOrder } };
+    } else if (filters.sortBy === "startTime") {
+      orderBy = { startTime: sortOrder };
+    }
+
+    // Ejecución optimizada en base de datos
+    const [total, stops] = await Promise.all([
+      db.stop.count({ where }),
+      db.stop.findMany({
+        where,
+        orderBy,
+        skip,
+        take: pageSize,
+        include: {
+          machine: { include: { area: true } },
+          area: true,
+          process: true,
+          stopType: true,
+          cause: true,
+          priority: true,
+          operator: { select: { id: true, name: true, email: true } },
+          technician: { select: { id: true, name: true, email: true } },
+          workOrder: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize) || 1;
+    return { stops, total, page, pageSize, totalPages };
+  } catch (dbErr: unknown) {
+    const error = dbErr as Error;
+    if (error.message && (error.message.includes("Acceso denegado") || error.message.includes("inactivo"))) {
+      throw error;
+    }
+
+    // Fallback en memoria si PostgreSQL local no está activo
+    let filtered = [...memoryStops];
+
+    // RBAC
+    if (session.role === "OPERADOR") {
+      filtered = filtered.filter((s) => s.operatorId === session.id);
+    } else if (session.role === "MANTENIMIENTO") {
+      filtered = filtered.filter(
+        (s) =>
+          s.cause?.isRepairable !== false ||
+          s.technicianId === session.id ||
+          Boolean(s.workOrder) ||
+          (s.cause?.name && (s.cause.name.toLowerCase().includes("mecánica") || s.cause.name.toLowerCase().includes("eléctrica")))
+      );
+    } else if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR") {
+      throw new Error(`Acceso denegado: El rol ${session.role} no tiene permisos para consultar historial.`);
+    }
+
+    // Filtro de Estado
+    if (filters.status && filters.status !== "ALL") {
+      filtered = filtered.filter((s) => s.status === filters.status);
+    } else if (!filters.status) {
+      filtered = filtered.filter((s) => s.status === "COMPLETED");
+    }
+
+    // Filtros de Catálogos
+    if (filters.machineId) filtered = filtered.filter((s) => s.machineId === filters.machineId);
+    if (filters.areaId) filtered = filtered.filter((s) => s.areaId === filters.areaId);
+    if (filters.processId) filtered = filtered.filter((s) => s.processId === filters.processId);
+    if (filters.stopTypeId) filtered = filtered.filter((s) => s.stopTypeId === filters.stopTypeId);
+    if (filters.causeId) filtered = filtered.filter((s) => s.causeId === filters.causeId);
+    if (filters.priorityId) filtered = filtered.filter((s) => s.priorityId === filters.priorityId);
+    if (filters.shift) filtered = filtered.filter((s) => s.shift === filters.shift);
+
+    // Rango de fechas
+    if (filters.dateFrom) {
+      const fromMs = new Date(filters.dateFrom).getTime();
+      if (!isNaN(fromMs)) {
+        filtered = filtered.filter((s) => new Date(s.startTime).getTime() >= fromMs);
+      }
+    }
+    if (filters.dateTo) {
+      const to = new Date(filters.dateTo);
+      if (filters.dateTo.length === 10) to.setHours(23, 59, 59, 999);
+      const toMs = to.getTime();
+      if (!isNaN(toMs)) {
+        filtered = filtered.filter((s) => new Date(s.startTime).getTime() <= toMs);
+      }
+    }
+
+    // Búsqueda
+    if (filters.search && filters.search.trim()) {
+      const q = filters.search.toLowerCase().trim();
+      filtered = filtered.filter((s) => {
+        const machCode = s.machine?.code?.toLowerCase() || "";
+        const machName = s.machine?.name?.toLowerCase() || "";
+        const opName = s.operator?.name?.toLowerCase() || "";
+        const causeName = s.cause?.name?.toLowerCase() || "";
+        const woCode = s.workOrder?.code?.toLowerCase() || "";
+        return (
+          machCode.includes(q) ||
+          machName.includes(q) ||
+          opName.includes(q) ||
+          causeName.includes(q) ||
+          woCode.includes(q)
+        );
+      });
+    }
+
+    // Ordenamiento
+    const sortOrder = filters.sortOrder === "asc" ? 1 : -1;
+    if (filters.sortBy === "duration") {
+      filtered.sort((a, b) => ((a.duration || 0) - (b.duration || 0)) * sortOrder);
+    } else if (filters.sortBy === "machine") {
+      filtered.sort((a, b) => (a.machine?.code || "").localeCompare(b.machine?.code || "") * sortOrder);
+    } else {
+      // Por defecto por startTime descendente
+      filtered.sort((a, b) => (new Date(a.startTime).getTime() - new Date(b.startTime).getTime()) * sortOrder);
+    }
+
+    const total = filtered.length;
+    const paginated = filtered.slice(skip, skip + pageSize);
+    const totalPages = Math.ceil(total / pageSize) || 1;
+
+    return {
+      stops: paginated,
+      total,
+      page,
+      pageSize,
+      totalPages,
+    };
+  }
+}
+
+/**
+ * Consulta de detalle completo de un paro para trazabilidad y auditoría
+ */
+export async function getStopDetailById(stopId: string, session: SessionUser) {
+  if (!session) throw new Error("Usuario no autenticado");
+  if (session.status !== "ACTIVE") throw new Error("Usuario inactivo");
+
+  const stop = await getStopById(stopId);
+  if (!stop) throw new Error("El evento de paro no fue encontrado.");
+
+  // Validación de permisos para ver el detalle
+  if (session.role === "OPERADOR" && stop.operatorId !== session.id) {
+    throw new Error("Acceso denegado: El operador no tiene permisos para consultar este registro.");
+  }
+
+  if (session.role === "MANTENIMIENTO") {
+    const isMaint =
+      stop.cause?.isRepairable !== false ||
+      stop.technicianId === session.id ||
+      Boolean(stop.workOrder) ||
+      (stop.cause?.name && (stop.cause.name.toLowerCase().includes("mecánica") || stop.cause.name.toLowerCase().includes("eléctrica")));
+    if (!isMaint) {
+      throw new Error("Acceso denegado: Registro fuera del alcance de mantenimiento.");
+    }
+  }
+
+  return stop;
+}
+
+/**
+ * Exportación de resultados filtrados del historial a formato CSV (FASE 7)
+ */
+export async function exportHistoryToCSV(
+  filters: HistoryQueryFilters,
+  session: SessionUser
+): Promise<string> {
+  // Se consultan todos los registros que cumplen los filtros sin paginación (hasta 10,000 registros)
+  const result = await getStopsHistory({ ...filters, page: 1, pageSize: 10000 }, session);
+  const rows = result.stops;
+
+  const headers = [
+    "ID Paro",
+    "Fecha",
+    "Hora Inicio (UTC)",
+    "Hora Fin (UTC)",
+    "Duracion (min)",
+    "Estado",
+    "Codigo Maquina",
+    "Nombre Maquina",
+    "Area",
+    "Proceso",
+    "Tipo de Paro",
+    "Causa Raiz",
+    "Prioridad",
+    "Turno",
+    "Operador",
+    "Tecnico Mantenimiento",
+    "Orden de Trabajo (OT)",
+    "Accion Tomada",
+    "Observaciones Iniciales",
+  ];
+
+  const escapeCsv = (val: unknown) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const csvLines = [headers.join(",")];
+
+  for (const r of rows) {
+    const line = [
+      escapeCsv(r.id),
+      escapeCsv(r.startTime ? new Date(r.startTime).toISOString().slice(0, 10) : ""),
+      escapeCsv(r.startTime ? new Date(r.startTime).toISOString() : ""),
+      escapeCsv(r.endTime ? new Date(r.endTime).toISOString() : ""),
+      escapeCsv(r.duration !== null && r.duration !== undefined ? r.duration : ""),
+      escapeCsv(r.status),
+      escapeCsv(r.machine?.code || ""),
+      escapeCsv(r.machine?.name || ""),
+      escapeCsv(r.area?.name || ""),
+      escapeCsv(r.process?.name || ""),
+      escapeCsv(r.stopType?.name || ""),
+      escapeCsv(r.cause?.name || ""),
+      escapeCsv(r.priority?.name || ""),
+      escapeCsv(r.shift || ""),
+      escapeCsv(r.operator?.name || ""),
+      escapeCsv(r.technician?.name || ""),
+      escapeCsv(r.workOrder?.code || ""),
+      escapeCsv(r.actionTaken || ""),
+      escapeCsv(r.observations || ""),
+    ];
+    csvLines.push(line.join(","));
+  }
+
+  // Prepend UTF-8 BOM (\uFEFF) para compatibilidad con Excel y acentos en español
+  return "\uFEFF" + csvLines.join("\r\n");
 }
