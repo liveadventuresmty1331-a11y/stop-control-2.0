@@ -26,3 +26,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession();
+
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
+  const limit = parseInt(searchParams.get("limit") || "20", 10);
+
+  if (status === "COMPLETED") {
+    const { getCompletedStops } = await import("@/lib/stops-service");
+    const stops = await getCompletedStops(limit);
+    return NextResponse.json(stops);
+  }
+
+  const { getActiveStops } = await import("@/lib/stops-service");
+  const stops = await getActiveStops();
+  return NextResponse.json(stops);
+}

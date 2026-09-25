@@ -21,6 +21,17 @@ export function formatDuration(seconds: number): string {
 }
 
 /**
+ * Formats a duration in minutes into a friendly string (e.g. "45 min", "1h 25m")
+ */
+export function formatDurationMinutes(minutes: number | null | undefined): string {
+  if (minutes === null || minutes === undefined || isNaN(minutes) || minutes < 0) return "-";
+  if (minutes < 60) return `${minutes} min`;
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+}
+
+/**
  * Formats an ISO date string to readable industrial plant date/time
  */
 export function formatDateTime(date: string | Date | null | undefined): string {
