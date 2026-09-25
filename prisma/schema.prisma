@@ -186,7 +186,7 @@ model Stop {
   observations String?    @db.Text
   actionTaken  String?    @map("action_taken") @db.Text
   status       String     @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
-  shift        String?    @default("TURNO_1") // TURNO_1, TURNO_2, TURNO_3
+  shift        String?    @default("Matutino") // Matutino, Vespertino, Nocturno
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 

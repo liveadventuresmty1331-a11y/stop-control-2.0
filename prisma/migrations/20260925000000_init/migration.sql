@@ -129,7 +129,7 @@ CREATE TABLE "stops" (
     "observations" TEXT,
     "action_taken" TEXT,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
-    "shift" TEXT DEFAULT 'TURNO_1',
+    "shift" TEXT DEFAULT 'Matutino',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
