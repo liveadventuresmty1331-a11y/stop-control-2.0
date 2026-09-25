@@ -3,6 +3,13 @@ import { SessionUser } from "./auth";
 import { memoryStops } from "./stops-service";
 import { getAllCatalogs } from "./catalogs-service";
 import { formatDurationMinutes } from "./utils";
+import {
+  calculateReliabilityMetrics,
+  ReliabilityIndicators,
+  MachineReliabilityMetric,
+} from "./reliability-service";
+
+export { type ReliabilityIndicators, type MachineReliabilityMetric };
 
 export interface DashboardFilters {
   dateFrom?: string;
@@ -58,6 +65,14 @@ export interface DashboardKPIs {
   totalActiveMachines: number;
   operatingMachinesCount: number;
   availabilityPercent: number;
+
+  // FASE 9: Indicadores de Confiabilidad y Mantenimiento
+  mttrMinutes: number | null;
+  mttrFormatted: string;
+  mtbfHours: number | null;
+  mtbfFormatted: string;
+  reliabilityAvailabilityPercent: number | null;
+  reliabilityAvailabilityFormatted: string;
 }
 
 export interface DayChartItem {
@@ -98,6 +113,7 @@ export interface DashboardData {
   kpis: DashboardKPIs;
   machinesStatus: MachineStatusItem[];
   charts: DashboardCharts;
+  reliability: ReliabilityIndicators;
   roleScope: string;
 }
 
@@ -499,6 +515,9 @@ function calculateMetricsFromStops(
 
   const activeStopsCount = activeStops.length;
 
+  // 5.1 Cálculo de Indicadores de Confiabilidad y Mantenimiento (FASE 9: MTTR, MTBF, Disponibilidad)
+  const reliability = calculateReliabilityMetrics(completedStops, allMachines, filters);
+
   const kpis: DashboardKPIs = {
     totalDowntimeMinutes,
     totalDowntimeFormatted,
@@ -510,6 +529,13 @@ function calculateMetricsFromStops(
     totalActiveMachines,
     operatingMachinesCount: operatingCount,
     availabilityPercent,
+    // FASE 9: Confiabilidad
+    mttrMinutes: reliability.mttrMinutes,
+    mttrFormatted: reliability.mttrFormatted,
+    mtbfHours: reliability.mtbfHours,
+    mtbfFormatted: reliability.mtbfFormatted,
+    reliabilityAvailabilityPercent: reliability.availabilityPercent,
+    reliabilityAvailabilityFormatted: reliability.availabilityFormatted,
   };
 
   // 6. Generación de Datasets para Gráficos
@@ -591,6 +617,7 @@ function calculateMetricsFromStops(
       downtimeByMachine,
       stopsByCause,
     },
+    reliability,
     roleScope: userRole,
   };
 }

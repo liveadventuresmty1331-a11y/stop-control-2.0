@@ -8,6 +8,8 @@ import DashboardKPIs from "./DashboardKPIs";
 import MachineStatusGrid from "./MachineStatusGrid";
 import DashboardCharts from "./DashboardCharts";
 import DashboardFiltersBar from "./DashboardFiltersBar";
+import ReliabilityKPIs from "./ReliabilityKPIs";
+import ReliabilityTable from "./ReliabilityTable";
 
 interface CatalogItem {
   id: string;
@@ -151,8 +153,14 @@ export default function DashboardView({
         onChangeRefreshInterval={setRefreshInterval}
       />
 
-      {/* Indicadores Clave de Desempeño (KPIs) */}
+      {/* Indicadores Clave de Desempeño (KPIs de Planta) */}
       <DashboardKPIs kpis={data.kpis} />
+
+      {/* Indicadores de Confiabilidad y Mantenimiento (FASE 9: MTTR, MTBF, Disponibilidad) */}
+      <ReliabilityKPIs reliability={data.reliability} />
+
+      {/* Comparativa de Confiabilidad por Máquina */}
+      <ReliabilityTable metrics={data.reliability.byMachine} />
 
       {/* Grid de Estado de Máquinas con Cronómetro en Vivo */}
       <MachineStatusGrid
