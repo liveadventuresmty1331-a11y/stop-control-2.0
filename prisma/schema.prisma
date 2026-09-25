@@ -1,0 +1,195 @@
+// STOPControl 2.0 — Prisma Relational Database Schema
+// Database Engine: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------
+// MODELO: Role (Roles del Sistema RBAC)
+// ----------------------------------------------------
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique // ADMINISTRADOR, OPERADOR, SUPERVISOR, MANTENIMIENTO
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+// ----------------------------------------------------
+// MODELO: User (Usuarios y Operadores)
+// ----------------------------------------------------
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  password        String   // Hash seguro bcrypt
+  roleId          String   @map("role_id")
+  role            Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE
+  stopsOperated   Stop[]   @relation("OperatorStops")
+  stopsAssigned   Stop[]   @relation("TechnicianStops")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([roleId])
+  @@map("users")
+}
+
+// ----------------------------------------------------
+// MODELO: Area (Áreas Industriales)
+// ----------------------------------------------------
+model Area {
+  id          String    @id @default(cuid())
+  name        String    @unique // Producción, Soldadura, Ensamble, Pintura
+  description String?
+  machines    Machine[]
+  stops       Stop[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("areas")
+}
+
+// ----------------------------------------------------
+// MODELO: Process (Procesos Operativos)
+// ----------------------------------------------------
+model Process {
+  id          String   @id @default(cuid())
+  name        String   @unique // Corte, Soldadura, Ensamble, Pintura
+  description String?
+  stops       Stop[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("processes")
+}
+
+// ----------------------------------------------------
+// MODELO: StopType (Tipos de Paro: Planeado / No planeado)
+// ----------------------------------------------------
+model StopType {
+  id          String   @id @default(cuid())
+  name        String   @unique // Planeado, No planeado
+  description String?
+  stops       Stop[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("stop_types")
+}
+
+// ----------------------------------------------------
+// MODELO: StopCause (Causas Raíz de Paro)
+// ----------------------------------------------------
+model StopCause {
+  id           String   @id @default(cuid())
+  name         String   @unique // Falla mecánica, Falla eléctrica, Falta de material, Mantenimiento, Ajuste, Error humano, Calidad, Otra
+  description  String?
+  isRepairable Boolean  @default(true) @map("is_repairable") // Distingue fallas reparables para MTTR
+  stops        Stop[]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("stop_causes")
+}
+
+// ----------------------------------------------------
+// MODELO: Priority (Nivel de Criticidad)
+// ----------------------------------------------------
+model Priority {
+  id        String   @id @default(cuid())
+  name      String   @unique // Baja, Media, Alta, Crítica
+  level     Int      @default(1) // 1: Baja, 2: Media, 3: Alta, 4: Crítica
+  colorCode String?  @map("color_code") // Hexadecimal para UI industrial
+  stops     Stop[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("priorities")
+}
+
+// ----------------------------------------------------
+// MODELO: Machine (Maquinaria y Estaciones de Planta)
+// ----------------------------------------------------
+model Machine {
+  id        String   @id @default(cuid())
+  code      String   @unique // CNC-01, CNC-02, SOLD-01, ENS-01, PINT-01
+  name      String   // Torno CNC, Soldadora, etc.
+  areaId    String   @map("area_id")
+  area      Area     @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  status    String   @default("OPERATING") // OPERATING, STOPPED, MAINTENANCE, OUT_OF_SERVICE
+  active    Boolean  @default(true)
+  stops     Stop[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([areaId])
+  @@index([status])
+  @@map("machines")
+}
+
+// ----------------------------------------------------
+// MODELO: WorkOrder (Órdenes de Trabajo)
+// ----------------------------------------------------
+model WorkOrder {
+  id        String   @id @default(cuid())
+  code      String   @unique // OT-YYYY-####
+  status    String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  notes     String?  @db.Text
+  stopId    String?  @unique @map("stop_id")
+  stop      Stop?    @relation("WorkOrderStop", fields: [stopId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("work_orders")
+}
+
+// ----------------------------------------------------
+// MODELO: Stop (Registro de Paros y Cronometraje)
+// ----------------------------------------------------
+model Stop {
+  id           String     @id @default(cuid())
+  machineId    String     @map("machine_id")
+  machine      Machine    @relation(fields: [machineId], references: [id], onDelete: Restrict)
+  operatorId   String     @map("operator_id")
+  operator     User       @relation("OperatorStops", fields: [operatorId], references: [id], onDelete: Restrict)
+  processId    String     @map("process_id")
+  process      Process    @relation(fields: [processId], references: [id], onDelete: Restrict)
+  areaId       String     @map("area_id")
+  area         Area       @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  stopTypeId   String     @map("stop_type_id")
+  stopType     StopType   @relation(fields: [stopTypeId], references: [id], onDelete: Restrict)
+  causeId      String     @map("cause_id")
+  cause        StopCause  @relation(fields: [causeId], references: [id], onDelete: Restrict)
+  priorityId   String     @map("priority_id")
+  priority     Priority   @relation(fields: [priorityId], references: [id], onDelete: Restrict)
+  technicianId String?    @map("technician_id")
+  technician   User?      @relation("TechnicianStops", fields: [technicianId], references: [id], onDelete: SetNull)
+  workOrder    WorkOrder? @relation("WorkOrderStop")
+  startTime    DateTime   @default(now()) @map("start_time") // Timestamp UTC
+  endTime      DateTime?  @map("end_time") // Timestamp UTC al finalizar
+  duration     Int?       // Duración exacta en segundos calculada (end_time - start_time)
+  observations String?    @db.Text
+  actionTaken  String?    @map("action_taken") @db.Text
+  status       String     @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  shift        String?    @default("TURNO_1") // TURNO_1, TURNO_2, TURNO_3
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@index([startTime])
+  @@index([machineId])
+  @@index([causeId])
+  @@index([status])
+  @@index([stopTypeId])
+  @@index([areaId])
+  @@map("stops")
+}
