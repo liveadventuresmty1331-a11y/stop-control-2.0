@@ -67,6 +67,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     "metrics:view",
   ],
   OPERADOR: [
+    "dashboard:view",
     "active-stops:view",
     "stops:create",
     "stops:finish",
@@ -79,6 +80,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     "metrics:view",
   ],
   MANTENIMIENTO: [
+    "dashboard:view",
     "active-stops:view",
     "history:view",
     "maintenance:action",
@@ -97,7 +99,7 @@ export function canRoleAccessRoute(role: RoleName, pathname: string): boolean {
   }
 
   if (pathname.startsWith("/dashboard")) {
-    return role === "SUPERVISOR";
+    return true; // Todos los roles autenticados pueden ingresar al Dashboard según su alcance RBAC
   }
 
   if (pathname.startsWith("/register-stop")) {

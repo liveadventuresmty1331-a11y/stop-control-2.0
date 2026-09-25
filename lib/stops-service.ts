@@ -1160,3 +1160,6 @@ export async function exportHistoryToCSV(
   // Prepend UTF-8 BOM (\uFEFF) para compatibilidad con Excel y acentos en español
   return "\uFEFF" + csvLines.join("\r\n");
 }
+
+export { memoryStops, memoryWorkOrders };
+
