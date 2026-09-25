@@ -220,15 +220,15 @@ async function runDashboardTests() {
     );
   }
 
-  // 6. Verificación de Límites de Alcance
-  console.log("\n6. Verificación de Límites de Alcance de la FASE 8:");
+  // 6. Verificación de Alcance Evolutivo (Fases 8, 9 y 10)
+  console.log("\n6. Verificación de Alcance Evolutivo:");
   assert(
-    !("paretoCumulativePercentage" in kpis) && !("paretoCurve" in charts),
-    "Límite respetado: No se implementa curva de Pareto acumulada (reservada para FASE 10)"
+    "mtbfHours" in kpis && "mttrMinutes" in kpis,
+    "Evolución exitosa: MTBF/MTTR formalmente integrados en el dashboard (FASE 9)"
   );
   assert(
-    !("mtbfHours" in kpis) && !("mttrHours" in kpis),
-    "Límite respetado: No se implementan cálculos de MTBF/MTTR formal (reservados para fases de confiabilidad)"
+    !("paretoCurve" in charts),
+    "Límite respetado: Pareto organizado en su propio servicio y sección dedicada (FASE 10)"
   );
 
   console.log(`\n==========================================`);

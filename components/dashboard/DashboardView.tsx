@@ -10,6 +10,7 @@ import DashboardCharts from "./DashboardCharts";
 import DashboardFiltersBar from "./DashboardFiltersBar";
 import ReliabilityKPIs from "./ReliabilityKPIs";
 import ReliabilityTable from "./ReliabilityTable";
+import ParetoSection from "./ParetoSection";
 
 interface CatalogItem {
   id: string;
@@ -167,6 +168,9 @@ export default function DashboardView({
         machines={data.machinesStatus}
         canManageStops={canManageStops}
       />
+
+      {/* Análisis Estadístico 80/20 (FASE 10: Diagramas de Pareto) */}
+      <ParetoSection pareto={data.pareto} />
 
       {/* Gráficos de Tendencias y Distribuciones */}
       <DashboardCharts charts={data.charts} />

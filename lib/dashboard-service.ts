@@ -8,8 +8,20 @@ import {
   ReliabilityIndicators,
   MachineReliabilityMetric,
 } from "./reliability-service";
+import {
+  generateDashboardPareto,
+  ParetoDashboardDatasets,
+  ParetoAnalysisResult,
+  ParetoItem,
+} from "./pareto-service";
 
-export { type ReliabilityIndicators, type MachineReliabilityMetric };
+export {
+  type ReliabilityIndicators,
+  type MachineReliabilityMetric,
+  type ParetoDashboardDatasets,
+  type ParetoAnalysisResult,
+  type ParetoItem,
+};
 
 export interface DashboardFilters {
   dateFrom?: string;
@@ -114,6 +126,7 @@ export interface DashboardData {
   machinesStatus: MachineStatusItem[];
   charts: DashboardCharts;
   reliability: ReliabilityIndicators;
+  pareto: ParetoDashboardDatasets;
   roleScope: string;
 }
 
@@ -608,6 +621,9 @@ function calculateMetricsFromStops(
       downtimeMinutes: item.downtimeMinutes,
     }));
 
+  // 7. Cálculo de Diagramas de Pareto (FASE 10: Principio 80/20 de causas y máquinas)
+  const pareto = generateDashboardPareto(completedStops, allMachines);
+
   return {
     kpis,
     machinesStatus,
@@ -618,6 +634,7 @@ function calculateMetricsFromStops(
       stopsByCause,
     },
     reliability,
+    pareto,
     roleScope: userRole,
   };
 }
