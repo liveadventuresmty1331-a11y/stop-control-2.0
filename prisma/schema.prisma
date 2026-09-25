@@ -51,6 +51,7 @@ model Area {
   id          String    @id @default(cuid())
   name        String    @unique // Producción, Soldadura, Ensamble, Pintura
   description String?
+  active      Boolean   @default(true)
   machines    Machine[]
   stops       Stop[]
   createdAt   DateTime  @default(now()) @map("created_at")
@@ -66,6 +67,7 @@ model Process {
   id          String   @id @default(cuid())
   name        String   @unique // Corte, Soldadura, Ensamble, Pintura
   description String?
+  active      Boolean  @default(true)
   stops       Stop[]
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -80,6 +82,7 @@ model StopType {
   id          String   @id @default(cuid())
   name        String   @unique // Planeado, No planeado
   description String?
+  active      Boolean  @default(true)
   stops       Stop[]
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -95,6 +98,7 @@ model StopCause {
   name         String   @unique // Falla mecánica, Falla eléctrica, Falta de material, Mantenimiento, Ajuste, Error humano, Calidad, Otra
   description  String?
   isRepairable Boolean  @default(true) @map("is_repairable") // Distingue fallas reparables para MTTR
+  active       Boolean  @default(true)
   stops        Stop[]
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -110,6 +114,7 @@ model Priority {
   name      String   @unique // Baja, Media, Alta, Crítica
   level     Int      @default(1) // 1: Baja, 2: Media, 3: Alta, 4: Crítica
   colorCode String?  @map("color_code") // Hexadecimal para UI industrial
+  active    Boolean  @default(true)
   stops     Stop[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
