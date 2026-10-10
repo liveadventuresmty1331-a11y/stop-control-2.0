@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { SessionUser } from "./auth";
 import { getAllCatalogs, memoryStore } from "./catalogs-service";
+import { syncStopCreated, syncStopCompleted, syncWorkOrder } from "./google-sheets";
 
 export interface CreateStopInput {
   machineId: string;
@@ -482,6 +483,8 @@ export async function createStop(input: CreateStopInput, session: SessionUser) {
       data: { status: "STOPPED" },
     });
 
+    syncStopCreated(newStop).catch((e) => console.warn("[GoogleSheets] Error:", e));
+
     return newStop;
   } catch (dbErr: unknown) {
     const error = dbErr as Error;
@@ -546,6 +549,7 @@ export async function createStop(input: CreateStopInput, session: SessionUser) {
     if (machIdx !== -1) {
       memoryStore.machines[machIdx].status = "STOPPED";
     }
+    syncStopCreated(newMemoryStop).catch((e) => console.warn("[GoogleSheets] Error:", e));
     return newMemoryStop;
   }
 }
@@ -765,6 +769,19 @@ export async function closeStop(
       });
     }
 
+    syncStopCompleted(updatedStop).catch((e) => console.warn("[GoogleSheets] Error:", e));
+    if (assignedWorkOrder) {
+      syncWorkOrder({
+        id: assignedWorkOrder.id,
+        code: assignedWorkOrder.code,
+        stopId: updatedStop.id,
+        machineCode: updatedStop.machine?.code,
+        status: assignedWorkOrder.status,
+        notes: assignedWorkOrder.notes,
+        technicianName: updatedStop.technician?.name,
+      }).catch((e) => console.warn("[GoogleSheets] Error:", e));
+    }
+
     return updatedStop;
   } catch (dbErr: unknown) {
     const error = dbErr as Error;
@@ -861,6 +878,18 @@ export async function closeStop(
     }
 
     memoryStops[stopIndex] = updatedMemoryStop;
+    syncStopCompleted(updatedMemoryStop).catch((e) => console.warn("[GoogleSheets] Error:", e));
+    if (assignedWorkOrder) {
+      syncWorkOrder({
+        id: assignedWorkOrder.id,
+        code: assignedWorkOrder.code,
+        stopId: updatedMemoryStop.id,
+        machineCode: updatedMemoryStop.machine?.code,
+        status: assignedWorkOrder.status,
+        notes: assignedWorkOrder.notes,
+        technicianName: updatedMemoryStop.technician?.name,
+      }).catch((e) => console.warn("[GoogleSheets] Error:", e));
+    }
     return updatedMemoryStop;
   }
 }

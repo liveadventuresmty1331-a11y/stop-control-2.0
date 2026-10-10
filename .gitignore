@@ -35,3 +35,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# credentials & database
+google-credentials.json
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

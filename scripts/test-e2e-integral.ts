@@ -339,11 +339,12 @@ async function runE2ETests() {
   assert(emptyMetrics.availabilityPercent === 100, "Disponibilidad sin fallas es 100%");
 
   // 5.2 Caso controlado: Exactamente 1 falla reparable
+  const testMachId = catalogs.machines[0]?.id || "mach-1";
   const singleRepairable = [
     {
       id: "single-1",
-      machineId: "mach-1",
-      machine: { id: "mach-1", code: "M-1", name: "Máquina 1" },
+      machineId: testMachId,
+      machine: { id: testMachId, code: "M-1", name: "Máquina 1" },
       status: "COMPLETED",
       duration: 60,
       startTime: "2026-09-20T10:00:00Z",
@@ -369,8 +370,8 @@ async function runE2ETests() {
   const dualRepairable = [
     {
       id: "dual-1",
-      machineId: "mach-1",
-      machine: { id: "mach-1", code: "M-1", name: "Máquina 1" },
+      machineId: testMachId,
+      machine: { id: testMachId, code: "M-1", name: "Máquina 1" },
       status: "COMPLETED",
       duration: 60,
       startTime: "2026-09-20T10:00:00Z",
@@ -380,8 +381,8 @@ async function runE2ETests() {
     },
     {
       id: "dual-2",
-      machineId: "mach-1",
-      machine: { id: "mach-1", code: "M-1", name: "Máquina 1" },
+      machineId: testMachId,
+      machine: { id: testMachId, code: "M-1", name: "Máquina 1" },
       status: "COMPLETED",
       duration: 30,
       startTime: "2026-09-20T15:00:00Z",
@@ -400,7 +401,7 @@ async function runE2ETests() {
   const plannedOnly = [
     {
       id: "plan-1",
-      machineId: "mach-1",
+      machineId: testMachId,
       status: "COMPLETED",
       duration: 120,
       startTime: "2026-09-20T08:00:00Z",

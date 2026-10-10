@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -149,7 +149,7 @@ model WorkOrder {
   id        String   @id @default(cuid())
   code      String   @unique // OT-YYYY-####
   status    String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
-  notes     String?  @db.Text
+  notes     String?
   stopId    String?  @unique @map("stop_id")
   stop      Stop?    @relation("WorkOrderStop", fields: [stopId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now()) @map("created_at")
@@ -183,8 +183,8 @@ model Stop {
   startTime    DateTime   @default(now()) @map("start_time") // Timestamp UTC
   endTime      DateTime?  @map("end_time") // Timestamp UTC al finalizar
   duration     Int?       // Duración exacta en segundos calculada (end_time - start_time)
-  observations String?    @db.Text
-  actionTaken  String?    @map("action_taken") @db.Text
+  observations String?
+  actionTaken  String?    @map("action_taken")
   status       String     @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
   shift        String?    @default("Matutino") // Matutino, Vespertino, Nocturno
   createdAt    DateTime   @default(now()) @map("created_at")

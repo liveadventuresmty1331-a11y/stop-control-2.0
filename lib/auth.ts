@@ -74,7 +74,31 @@ export async function authenticateCredentials(
         return { error: "El usuario se encuentra inactivo. Contacte al administrador." };
       }
 
-      const isMatch = await bcrypt.compare(plainPassword, dbUser.password);
+      let isMatch = await bcrypt.compare(plainPassword, dbUser.password);
+
+      // Si no coincide con el hash local, verificar si la contraseña o hash fueron actualizados en Google Sheets
+      if (!isMatch) {
+        try {
+          const { getGoogleSheetUserCredentials } = await import("./google-sheets");
+          const creds = await getGoogleSheetUserCredentials(normalizedEmail);
+          if (creds) {
+            const matchesPlain = creds.password && creds.password === plainPassword;
+            const matchesHash = creds.hash && (await bcrypt.compare(plainPassword, creds.hash));
+            if (matchesPlain || matchesHash) {
+              // Sincronizar hash en la base de datos local
+              const newHashed = creds.hash || (await bcrypt.hash(plainPassword, 10));
+              await db.user.update({
+                where: { id: dbUser.id },
+                data: { password: newHashed },
+              });
+              isMatch = true;
+            }
+          }
+        } catch {
+          // Ignorar fallo de red
+        }
+      }
+
       if (!isMatch) {
         return { error: "Credenciales incorrectas" };
       }
@@ -96,7 +120,24 @@ export async function authenticateCredentials(
     );
 
     if (demoFound) {
-      const isDemoMatch = plainPassword === "demo123" || (await bcrypt.compare(plainPassword, DEMO_PASSWORD_HASH));
+      let isDemoMatch = plainPassword === "demo123" || (await bcrypt.compare(plainPassword, DEMO_PASSWORD_HASH));
+
+      if (!isDemoMatch) {
+        try {
+          const { getGoogleSheetUserCredentials } = await import("./google-sheets");
+          const creds = await getGoogleSheetUserCredentials(normalizedEmail);
+          if (creds) {
+            const matchesPlain = creds.password && creds.password === plainPassword;
+            const matchesHash = creds.hash && (await bcrypt.compare(plainPassword, creds.hash));
+            if (matchesPlain || matchesHash) {
+              isDemoMatch = true;
+            }
+          }
+        } catch {
+          // Ignorar
+        }
+      }
+
       if (!isDemoMatch) {
         return { error: "Credenciales incorrectas" };
       }
