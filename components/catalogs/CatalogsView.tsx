@@ -674,6 +674,7 @@ export default function CatalogsView() {
                       <option value="OPERADOR">OPERADOR</option>
                       <option value="SUPERVISOR">SUPERVISOR</option>
                       <option value="MANTENIMIENTO">MANTENIMIENTO</option>
+                      <option value="CALIDAD">CALIDAD</option>
                     </select>
                   </div>
                   <div className="flex flex-col gap-1">

@@ -660,7 +660,7 @@ export async function closeStop(
   }
 
   // 3. Validar permisos por rol
-  const allowedRoles = ["ADMINISTRADOR", "OPERADOR", "SUPERVISOR", "MANTENIMIENTO"];
+  const allowedRoles = ["ADMINISTRADOR", "OPERADOR", "SUPERVISOR", "MANTENIMIENTO", "CALIDAD"];
   if (!allowedRoles.includes(session.role)) {
     throw new Error(`Acceso denegado: El rol ${session.role} no tiene permisos para cerrar paros.`);
   }
@@ -987,7 +987,7 @@ export async function getStopsHistory(
           ],
         },
       ];
-    } else if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR") {
+    } else if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR" && session.role !== "CALIDAD") {
       throw new Error(`Acceso denegado: El rol ${session.role} no tiene permisos para consultar historial.`);
     }
 

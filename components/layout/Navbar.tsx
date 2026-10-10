@@ -14,6 +14,7 @@ const ROLE_STYLES: Record<string, { bg: string; text: string; border: string }> 
   OPERADOR: { bg: "bg-amber-950/50", text: "text-amber-400", border: "border-amber-800/40" },
   SUPERVISOR: { bg: "bg-blue-950/50", text: "text-blue-400", border: "border-blue-800/40" },
   MANTENIMIENTO: { bg: "bg-emerald-950/50", text: "text-emerald-400", border: "border-emerald-800/40" },
+  CALIDAD: { bg: "bg-teal-950/50", text: "text-teal-400", border: "border-teal-800/40" },
 };
 
 export default function Navbar({ user }: NavbarProps) {

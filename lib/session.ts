@@ -86,6 +86,12 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     "maintenance:action",
     "metrics:view",
   ],
+  CALIDAD: [
+    "dashboard:view",
+    "active-stops:view",
+    "history:view",
+    "metrics:view",
+  ],
 };
 
 /**

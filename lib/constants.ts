@@ -105,4 +105,10 @@ export const DEMO_USERS: Array<{
     email: 'mantenimiento@stopcontrol.local',
     description: 'Gestión de órdenes de trabajo, análisis de MTTR, MTBF y disponibilidad.',
   },
+  {
+    role: 'CALIDAD',
+    name: 'Mariana Silva',
+    email: 'calidad@stopcontrol.local',
+    description: 'Auditoría de paros, análisis de causas raíz y métricas de calidad.',
+  },
 ];

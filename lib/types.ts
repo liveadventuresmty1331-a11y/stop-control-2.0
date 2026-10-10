@@ -2,7 +2,7 @@
  * STOPControl 2.0 — Definiciones de tipos y dominio del sistema
  */
 
-export type RoleName = 'ADMINISTRADOR' | 'OPERADOR' | 'SUPERVISOR' | 'MANTENIMIENTO';
+export type RoleName = 'ADMINISTRADOR' | 'OPERADOR' | 'SUPERVISOR' | 'MANTENIMIENTO' | 'CALIDAD';
 
 export type MachineStatus = 'OPERATING' | 'STOPPED' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
 
