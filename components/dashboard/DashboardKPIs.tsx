@@ -1,6 +1,7 @@
 "use client";
 
-import { Clock, AlertTriangle, AlertOctagon, Flame, CheckCircle2, Wrench } from "lucide-react";
+import Link from "next/link";
+import { Clock, AlertTriangle, AlertOctagon, Flame, CheckCircle2, Wrench, ArrowRight } from "lucide-react";
 import { DashboardKPIs as DashboardKPIsType } from "@/lib/dashboard-service";
 
 interface DashboardKPIsProps {
@@ -152,6 +153,17 @@ export default function DashboardKPIs({ kpis }: DashboardKPIsProps) {
           <p className="text-[11px] text-slate-500 mt-0.5">
             {kpis.stoppedMachinesCount} máquina{kpis.stoppedMachinesCount === 1 ? "" : "s"} detenida{kpis.stoppedMachinesCount === 1 ? "" : "s"}
           </p>
+          <Link
+            href="/active-stops"
+            className={`mt-2.5 inline-flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition group ${
+              kpis.activeStopsCount > 0
+                ? "bg-rose-900/40 hover:bg-rose-900/70 border-rose-700/60 text-rose-300"
+                : "bg-slate-950/60 hover:bg-slate-800/80 border-slate-800 text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <span>Ver Paros Activos</span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         </div>
       </div>
 

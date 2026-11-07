@@ -1,7 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Filter, RotateCcw, RefreshCw, Calendar, MapPin, Cpu, Wrench, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Filter,
+  RotateCcw,
+  RefreshCw,
+  Calendar,
+  CalendarRange,
+  MapPin,
+  Cpu,
+  Wrench,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 import { DashboardFilters } from "@/lib/dashboard-service";
 
 interface CatalogOption {
@@ -36,6 +47,11 @@ export default function DashboardFiltersBar({
 }: DashboardFiltersBarProps) {
   const [localFilters, setLocalFilters] = useState<DashboardFilters>(filters);
 
+  // Mantener sincronizado si cambian los filtros desde el componente padre
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
   // Filtrado reactivo de máquinas según área seleccionada
   const filteredMachines = localFilters.areaId
     ? machines.filter((m) => m.areaId === localFilters.areaId)
@@ -59,6 +75,48 @@ export default function DashboardFiltersBar({
     onApplyFilters(emptyFilters);
   };
 
+  // Función para aplicar filtros de tiempo preconfigurados (1 mes, 7 días, hoy, etc.)
+  const applyTimePreset = (preset: "today" | "week" | "month" | "current_month" | "quarter" | "all") => {
+    const today = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const formatYMD = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    let from = "";
+    let to = formatYMD(today);
+
+    if (preset === "today") {
+      from = formatYMD(today);
+    } else if (preset === "week") {
+      const past = new Date(today);
+      past.setDate(today.getDate() - 7);
+      from = formatYMD(past);
+    } else if (preset === "month") {
+      // 1 Mes exacto (30 días anteriores a hoy)
+      const past = new Date(today);
+      past.setDate(today.getDate() - 30);
+      from = formatYMD(past);
+    } else if (preset === "current_month") {
+      // Mes calendario actual (del día 1 hasta hoy)
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      from = formatYMD(firstDay);
+    } else if (preset === "quarter") {
+      const past = new Date(today);
+      past.setDate(today.getDate() - 90);
+      from = formatYMD(past);
+    } else if (preset === "all") {
+      from = "";
+      to = "";
+    }
+
+    const updated: DashboardFilters = {
+      ...localFilters,
+      dateFrom: from || undefined,
+      dateTo: to || undefined,
+    };
+    setLocalFilters(updated);
+    onApplyFilters(updated);
+  };
+
   const hasActiveFilters = Boolean(
     localFilters.dateFrom ||
       localFilters.dateTo ||
@@ -70,7 +128,7 @@ export default function DashboardFiltersBar({
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 shadow-md backdrop-blur">
-      <form onSubmit={handleApply} className="flex flex-col gap-3">
+      <form onSubmit={handleApply} className="flex flex-col gap-3.5">
         {/* Fila superior: Título de filtros, auto-refresh y botón de recarga */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2 text-slate-300">
@@ -117,6 +175,65 @@ export default function DashboardFiltersBar({
               <span className="hidden sm:inline">Actualizar</span>
             </button>
           </div>
+        </div>
+
+        {/* Fila de Accesos Rápidos de Tiempo (1 Mes, 7 Días, Hoy, etc.) */}
+        <div className="flex flex-wrap items-center gap-2 py-1 px-2.5 rounded-lg bg-slate-950/70 border border-slate-800/80">
+          <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
+            <CalendarRange className="w-3.5 h-3.5 text-rose-400" />
+            Periodo rápido:
+          </span>
+
+          {/* Botón destacado de 1 Mes */}
+          <button
+            type="button"
+            onClick={() => applyTimePreset("month")}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-900/40 border border-rose-500/60 transition active:scale-95"
+            title="Ver los últimos 30 días"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-rose-200" />
+            <span>📅 1 Mes (Últimos 30 días)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyTimePreset("today")}
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition"
+          >
+            Hoy
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyTimePreset("week")}
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition"
+          >
+            Últimos 7 días
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyTimePreset("current_month")}
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition"
+          >
+            Mes Actual
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyTimePreset("quarter")}
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition"
+          >
+            3 Meses
+          </button>
+
+          <button
+            type="button"
+            onClick={() => applyTimePreset("all")}
+            className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition"
+          >
+            Todo el historial
+          </button>
         </div>
 
         {/* Fila de Controles de Entrada */}

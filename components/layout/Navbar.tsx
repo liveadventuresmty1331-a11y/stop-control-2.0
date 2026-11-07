@@ -60,6 +60,16 @@ export default function Navbar({ user }: NavbarProps) {
             </div>
           </Link>
 
+          {/* Logo de la Universidad en Navbar (sin fondo blanco) */}
+          <div className="hidden sm:flex items-center pl-3 border-l border-slate-800">
+            <img
+              src="/uin-logo.png"
+              alt="Universidad Interamericana del Norte"
+              className="h-7 sm:h-8 w-auto object-contain filter brightness-125"
+              title="Universidad Interamericana del Norte"
+            />
+          </div>
+
           {/* Menú de Navegación Principal */}
           <nav className="flex items-center gap-1 text-xs overflow-x-auto py-1 max-w-full">
             {canSeeDashboard && (

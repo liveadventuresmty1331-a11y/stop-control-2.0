@@ -94,6 +94,14 @@ export interface DayChartItem {
   downtimeMinutes: number;
 }
 
+export interface MonthChartItem {
+  month: string;
+  label: string;
+  fullLabel: string;
+  count: number;
+  downtimeMinutes: number;
+}
+
 export interface PeriodChartItem {
   period: string;
   count: number;
@@ -116,6 +124,7 @@ export interface CauseChartItem {
 
 export interface DashboardCharts {
   stopsByDay: DayChartItem[];
+  stopsByMonth: MonthChartItem[];
   stopsByPeriod: PeriodChartItem[];
   downtimeByMachine: MachineDowntimeChartItem[];
   stopsByCause: CauseChartItem[];
@@ -576,6 +585,42 @@ function calculateMetricsFromStops(
     };
   });
 
+  // A2. Paros y tiempo de paro por Mes (cronológico)
+  const monthAggMap = new Map<string, { count: number; downtimeMinutes: number }>();
+  const MONTH_NAMES = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+  ];
+  const FULL_MONTH_NAMES = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  for (const s of completedStops) {
+    const rawDate = s.startTime instanceof Date ? s.startTime.toISOString() : String(s.startTime);
+    const mStr = rawDate.slice(0, 7); // "YYYY-MM"
+    const curr = monthAggMap.get(mStr) || { count: 0, downtimeMinutes: 0 };
+    curr.count += 1;
+    curr.downtimeMinutes += Number(s.duration) || 0;
+    monthAggMap.set(mStr, curr);
+  }
+
+  const sortedMonths = Array.from(monthAggMap.keys()).sort();
+  const stopsByMonth: MonthChartItem[] = sortedMonths.map((mStr) => {
+    const data = monthAggMap.get(mStr)!;
+    const parts = mStr.split("-");
+    const mIndex = parseInt(parts[1], 10) - 1;
+    const monthShort = MONTH_NAMES[mIndex] || parts[1];
+    const monthFull = FULL_MONTH_NAMES[mIndex] || parts[1];
+    return {
+      month: mStr,
+      label: `${monthShort} ${parts[0].slice(2)}`,
+      fullLabel: `${monthFull} ${parts[0]}`,
+      count: data.count,
+      downtimeMinutes: data.downtimeMinutes,
+    };
+  });
+
   // B. Paros por Turno / Periodo
   const shiftAggMap = new Map<string, { count: number; downtimeMinutes: number }>();
   const defaultShifts = ["Matutino", "Vespertino", "Nocturno"];
@@ -629,6 +674,7 @@ function calculateMetricsFromStops(
     machinesStatus,
     charts: {
       stopsByDay,
+      stopsByMonth,
       stopsByPeriod,
       downtimeByMachine,
       stopsByCause,

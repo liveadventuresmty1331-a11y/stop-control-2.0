@@ -60,12 +60,8 @@ function LoginForm() {
         return;
       }
 
-      // Redirigir según el rol del usuario
-      if (data.user.role === "OPERADOR") {
-        router.push("/active-stops");
-      } else {
-        router.push(callbackUrl === "/login" ? "/dashboard" : callbackUrl);
-      }
+      // Redirigir a Dashboard para todos los perfiles (sin forzar envío directo a paros a ningún rol)
+      router.push(callbackUrl === "/login" ? "/dashboard" : callbackUrl);
       router.refresh();
     } catch {
       setError("Error de red o conexión con el servidor");
@@ -122,14 +118,36 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-8">
-      <div className="w-full max-w-md flex flex-col gap-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden">
+      {/* Fondo sutil: Marca de agua UIN */}
+      <div
+        className="fixed inset-0 pointer-events-none select-none z-0 flex items-center justify-center overflow-hidden"
+        aria-hidden="true"
+      >
+        <img
+          src="/uin-logo.png"
+          alt=""
+          className="w-96 sm:w-[500px] max-w-[70vw] opacity-[0.035] object-contain filter brightness-150"
+        />
+      </div>
+
+
+      <div className="w-full max-w-md flex flex-col gap-6 relative z-10">
         {/* Header de la Aplicación */}
         <div className="flex flex-col items-center text-center gap-2">
-          <div className="h-12 w-12 rounded-xl bg-rose-600 flex items-center justify-center font-black text-2xl shadow-xl shadow-rose-900/40 text-white">
+          {/* Logo pequeño de la Universidad */}
+          <div className="flex items-center justify-center mb-1">
+            <img
+              src="/uin-logo.png"
+              alt="Universidad Interamericana del Norte"
+              className="h-9 sm:h-10 w-auto object-contain filter drop-shadow"
+            />
+          </div>
+
+          <div className="h-11 w-11 rounded-xl bg-rose-600 flex items-center justify-center font-black text-xl shadow-xl shadow-rose-900/40 text-white">
             ST
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-0.5">
             <h1 className="text-2xl font-bold tracking-tight text-white">STOPControl</h1>
             <span className="text-xs bg-rose-500/20 text-rose-400 font-semibold px-2 py-0.5 rounded border border-rose-500/30">
               2.0
