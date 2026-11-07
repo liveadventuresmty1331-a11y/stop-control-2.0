@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth";
-import { testGoogleSheetsConnection, syncStopCreated, syncStopCompleted, syncWorkOrder } from "@/lib/google-sheets";
-import { getAllCatalogs } from "@/lib/catalogs-service";
-import { memoryStops, memoryWorkOrders } from "@/lib/stops-service";
+import { testGoogleSheetsConnection, syncStopCreated, syncStopCompleted } from "@/lib/google-sheets";
+import { memoryStops } from "@/lib/stops-service";
 import { db } from "@/lib/db";
 
 /**
@@ -21,7 +20,7 @@ export async function GET() {
 /**
  * POST: Sincronización masiva inicial de datos existentes hacia Google Sheets
  */
-export async function POST(req: NextRequest) {
+export async function POST() {
   const session = await getServerSession();
   if (!session) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });

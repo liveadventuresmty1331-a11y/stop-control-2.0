@@ -10,9 +10,6 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  LayoutGrid,
-  ListFilter,
-  Sparkles,
 } from "lucide-react";
 import { MachineStatusItem } from "@/lib/dashboard-service";
 import LiveStopTimer from "@/components/stops/LiveStopTimer";

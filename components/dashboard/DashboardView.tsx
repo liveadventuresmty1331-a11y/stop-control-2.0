@@ -13,7 +13,6 @@ import {
   Activity,
   Layers,
   Wrench,
-  CheckCircle2,
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth";
 import { DashboardData, DashboardFilters } from "@/lib/dashboard-service";
