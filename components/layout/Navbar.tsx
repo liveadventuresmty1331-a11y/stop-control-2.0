@@ -84,6 +84,18 @@ export default function Navbar({ user }: NavbarProps) {
               <span>Inicio</span>
             </Link>
 
+            <Link
+              href="/active-stops"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                pathname === "/active-stops"
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-rose-400" />
+              <span>Paros Activos</span>
+            </Link>
+
             {canRegister && (
               <Link
                 href="/register-stop"
@@ -97,18 +109,6 @@ export default function Navbar({ user }: NavbarProps) {
                 <span>Registrar Paro</span>
               </Link>
             )}
-
-            <Link
-              href="/active-stops"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                pathname === "/active-stops"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-rose-400" />
-              <span>Paros Activos</span>
-            </Link>
 
             {canSeeDashboard && (
               <Link
