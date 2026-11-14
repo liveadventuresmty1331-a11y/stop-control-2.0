@@ -84,17 +84,17 @@ export default function Navbar({ user }: NavbarProps) {
               <span>Inicio</span>
             </Link>
 
-            {canSeeDashboard && (
+            {canRegister && (
               <Link
-                href="/dashboard"
+                href="/register-stop"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                  pathname === "/dashboard"
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-400 hover:text-white hover:bg-slate-850"
+                  pathname === "/register-stop"
+                    ? "bg-rose-950/60 border border-rose-800 text-rose-300"
+                    : "text-rose-400 hover:text-rose-300 hover:bg-slate-850"
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Registrar Paro</span>
               </Link>
             )}
 
@@ -110,31 +110,17 @@ export default function Navbar({ user }: NavbarProps) {
               <span>Paros Activos</span>
             </Link>
 
-            {canRegister && (
+            {canSeeDashboard && (
               <Link
-                href="/register-stop"
+                href="/dashboard"
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                  pathname === "/register-stop"
-                    ? "bg-rose-950/60 border border-rose-800 text-rose-300"
-                    : "text-rose-400 hover:text-rose-300 hover:bg-slate-850"
-                }`}
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                <span>Registrar Paro</span>
-              </Link>
-            )}
-
-            {canSeeCatalogs && (
-              <Link
-                href="/catalogs"
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                  pathname === "/catalogs"
+                  pathname === "/dashboard"
                     ? "bg-slate-800 text-white"
                     : "text-slate-400 hover:text-white hover:bg-slate-850"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
-                <span>Catálogos</span>
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Dashboard</span>
               </Link>
             )}
 
@@ -149,6 +135,20 @@ export default function Navbar({ user }: NavbarProps) {
               <History className="w-3.5 h-3.5 text-amber-400" />
               <span>Historial</span>
             </Link>
+
+            {canSeeCatalogs && (
+              <Link
+                href="/catalogs"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                  pathname === "/catalogs"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-850"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5 text-purple-400" />
+                <span>Catálogos</span>
+              </Link>
+            )}
           </nav>
         </div>
 
