@@ -71,8 +71,8 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {INITIAL_MACHINES.map((machine, index) => {
-              const statusKey = index === 0 ? "STOPPED" : "OPERATING";
+            {INITIAL_MACHINES.map((machine) => {
+              const statusKey = "OPERATING";
               const status = MACHINE_STATUS_CONFIG[statusKey];
               return (
                 <div 
