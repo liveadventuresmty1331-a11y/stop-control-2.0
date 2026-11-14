@@ -19,7 +19,7 @@ import {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") || "/home";
 
   // Estado del modo: 'login' | 'recover'
   const [mode, setMode] = useState<"login" | "recover">("login");
@@ -60,8 +60,8 @@ function LoginForm() {
         return;
       }
 
-      // Redirigir a Dashboard para todos los perfiles (sin forzar envío directo a paros a ningún rol)
-      router.push(callbackUrl === "/login" ? "/dashboard" : callbackUrl);
+      // Redirigir al Home para todos los perfiles
+      router.push(callbackUrl === "/login" ? "/home" : callbackUrl);
       router.refresh();
     } catch {
       setError("Error de red o conexión con el servidor");

@@ -7,19 +7,25 @@ export async function middleware(req: NextRequest) {
   const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME)?.value;
   const session = sessionCookie ? await verifySessionToken(sessionCookie) : null;
 
+  // 0. Redireccionar la raíz (/) según estado de sesión
+  if (pathname === "/") {
+    if (!session) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
+
   // 1. Redireccionar usuarios autenticados que visitan /login
   if (pathname === "/login") {
     if (session) {
-      if (session.role === "OPERADOR") {
-        return NextResponse.redirect(new URL("/active-stops", req.url));
-      }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(new URL("/home", req.url));
     }
     return NextResponse.next();
   }
 
   // 2. Proteger rutas que requieren autenticación
   const isProtectedRoute = [
+    "/home",
     "/dashboard",
     "/active-stops",
     "/register-stop",
@@ -39,9 +45,7 @@ export async function middleware(req: NextRequest) {
     const hasAccess = canRoleAccessRoute(session.role, pathname);
     if (!hasAccess) {
       // Redirigir a una ruta permitida según el rol si no tiene permiso
-      const fallbackUrl = session.role === "OPERADOR" 
-        ? new URL("/active-stops?unauthorized=1", req.url)
-        : new URL("/dashboard?unauthorized=1", req.url);
+      const fallbackUrl = new URL("/home?unauthorized=1", req.url);
       return NextResponse.redirect(fallbackUrl);
     }
   }
@@ -51,7 +55,9 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/login",
+    "/home/:path*",
     "/dashboard/:path*",
     "/active-stops/:path*",
     "/register-stop/:path*",
