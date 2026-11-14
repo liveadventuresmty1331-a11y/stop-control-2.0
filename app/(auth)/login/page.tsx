@@ -25,8 +25,8 @@ function LoginForm() {
   const [mode, setMode] = useState<"login" | "recover">("login");
 
   // Campos de Login
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [password, setPassword] = useState(searchParams.get("email") ? "demo123" : "");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, User as UserIcon, Activity, PlusCircle, Layers, LayoutDashboard, History } from "lucide-react";
+import { LogOut, User as UserIcon, Activity, PlusCircle, Layers, LayoutDashboard, History, Home as HomeIcon } from "lucide-react";
 import { SessionUser } from "@/lib/auth";
 
 interface NavbarProps {
@@ -72,6 +72,18 @@ export default function Navbar({ user }: NavbarProps) {
 
           {/* Menú de Navegación Principal */}
           <nav className="flex items-center gap-1 text-xs overflow-x-auto py-1 max-w-full">
+            <Link
+              href="/"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                pathname === "/"
+                  ? "bg-slate-800 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+              }`}
+            >
+              <HomeIcon className="w-3.5 h-3.5" />
+              <span>Inicio</span>
+            </Link>
+
             {canSeeDashboard && (
               <Link
                 href="/dashboard"
