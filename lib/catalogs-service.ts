@@ -49,7 +49,7 @@ const memoryStore = {
     name: m.name,
     areaName: m.areaName,
     areaId: `area-${INITIAL_AREAS.indexOf(m.areaName) + 1}`,
-    status: i === 0 ? "STOPPED" : "OPERATING",
+    status: "OPERATING",
     active: true,
   })),
   users: DEMO_USERS.map((u, i) => ({

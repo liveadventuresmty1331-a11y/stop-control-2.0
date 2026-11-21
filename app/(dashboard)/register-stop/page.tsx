@@ -8,9 +8,14 @@ import { AlertTriangle } from "lucide-react";
 export default async function RegisterStopPage() {
   const session = await getServerSession();
 
-  // Validación estricta en servidor: Solo Operadores y Administradores pueden registrar paros
-  if (!session || (session.role !== "OPERADOR" && session.role !== "ADMINISTRADOR")) {
-    redirect("/dashboard?unauthorized=1");
+  // Validación estricta en servidor: Administradores, Supervisores y Operadores pueden registrar paros
+  if (
+    !session ||
+    (session.role !== "OPERADOR" &&
+      session.role !== "ADMINISTRADOR" &&
+      session.role !== "SUPERVISOR")
+  ) {
+    redirect("/home?unauthorized=1");
   }
 
   const catalogs = await getAllCatalogs();
@@ -28,12 +33,21 @@ export default async function RegisterStopPage() {
           </p>
         </div>
 
-        <Link
-          href="/active-stops"
-          className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 transition"
-        >
-          ← Ver Paros Activos
-        </Link>
+        {session.role === "OPERADOR" ? (
+          <Link
+            href="/home"
+            className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 transition"
+          >
+            ← Volver al Inicio
+          </Link>
+        ) : (
+          <Link
+            href="/active-stops"
+            className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 transition"
+          >
+            ← Ver Paros Activos
+          </Link>
+        )}
       </div>
 
       <RegisterStopForm
