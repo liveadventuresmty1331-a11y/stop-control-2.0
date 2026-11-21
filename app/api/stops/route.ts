@@ -9,10 +9,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  // Validación estricta en servidor: Solo Operadores y Administradores pueden registrar paros
-  if (session.role !== "ADMINISTRADOR" && session.role !== "OPERADOR") {
+  // Validación estricta en servidor: Administrador, Supervisor y Operador pueden registrar paros
+  if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR" && session.role !== "OPERADOR") {
     return NextResponse.json(
-      { error: "Acceso denegado: solo Operadores y Administradores tienen permisos para registrar paros." },
+      { error: "Acceso denegado: tu rol no tiene permisos para registrar paros." },
       { status: 403 }
     );
   }

@@ -37,9 +37,11 @@ export default function Navbar({ user }: NavbarProps) {
     border: "border-slate-700",
   };
 
-  const canRegister = user.role === "ADMINISTRADOR" || user.role === "OPERADOR";
+  const canSeeActiveStops = ["ADMINISTRADOR", "SUPERVISOR", "MANTENIMIENTO", "CALIDAD"].includes(user.role);
+  const canRegister = ["ADMINISTRADOR", "SUPERVISOR", "OPERADOR"].includes(user.role);
+  const canSeeDashboard = ["ADMINISTRADOR", "SUPERVISOR", "MANTENIMIENTO", "CALIDAD"].includes(user.role);
+  const canSeeHistory = ["ADMINISTRADOR", "SUPERVISOR", "MANTENIMIENTO"].includes(user.role);
   const canSeeCatalogs = user.role === "ADMINISTRADOR";
-  const canSeeDashboard = true;
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 sm:px-6 py-2.5">
@@ -84,17 +86,19 @@ export default function Navbar({ user }: NavbarProps) {
               <span>Inicio</span>
             </Link>
 
-            <Link
-              href="/active-stops"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                pathname === "/active-stops"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
-              }`}
-            >
-              <Activity className="w-3.5 h-3.5 text-rose-400" />
-              <span>Paros Activos</span>
-            </Link>
+            {canSeeActiveStops && (
+              <Link
+                href="/active-stops"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                  pathname === "/active-stops"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-850"
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5 text-rose-400" />
+                <span>Paros Activos</span>
+              </Link>
+            )}
 
             {canRegister && (
               <Link
@@ -124,17 +128,19 @@ export default function Navbar({ user }: NavbarProps) {
               </Link>
             )}
 
-            <Link
-              href="/history"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
-                pathname === "/history"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
-              }`}
-            >
-              <History className="w-3.5 h-3.5 text-amber-400" />
-              <span>Historial</span>
-            </Link>
+            {canSeeHistory && (
+              <Link
+                href="/history"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+                  pathname === "/history"
+                    ? "bg-slate-800 text-white"
+                    : "text-slate-400 hover:text-white hover:bg-slate-850"
+                }`}
+              >
+                <History className="w-3.5 h-3.5 text-amber-400" />
+                <span>Historial</span>
+              </Link>
+            )}
 
             {canSeeCatalogs && (
               <Link

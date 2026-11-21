@@ -406,8 +406,8 @@ export async function createStop(input: CreateStopInput, session: SessionUser) {
     throw new Error("Usuario no autenticado");
   }
 
-  if (session.role !== "ADMINISTRADOR" && session.role !== "OPERADOR") {
-    throw new Error("Acceso denegado: solo Operadores y Administradores pueden registrar paros");
+  if (session.role !== "ADMINISTRADOR" && session.role !== "SUPERVISOR" && session.role !== "OPERADOR") {
+    throw new Error("Acceso denegado: tu rol no tiene permisos para registrar paros");
   }
 
   // 2. Validar campos obligatorios

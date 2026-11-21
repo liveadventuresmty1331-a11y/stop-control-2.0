@@ -31,11 +31,10 @@ export default async function HomePage({
   }
 
   const wasDenied = searchParams?.unauthorized === "1";
-  const isAdmin = session.role === "ADMINISTRADOR";
-  const canRegister = isAdmin || session.role === "OPERADOR";
+  const role = session.role;
 
-  // Las 5 Opciones Principales del Home en el orden exacto solicitado:
-  const HOME_OPTIONS = [
+  // Catálogo maestro de las opciones del sistema:
+  const ALL_OPTIONS = [
     {
       id: "active-stops",
       title: "Paros Activos",
@@ -49,8 +48,7 @@ export default async function HomePage({
       btnBg: "bg-emerald-600 hover:bg-emerald-500",
       href: "/active-stops",
       badge: "Cronómetro en Vivo",
-      enabled: true,
-      allowedRolesText: "Todos los perfiles",
+      allowedRolesText: "Supervisión y Operaciones",
     },
     {
       id: "register-stop",
@@ -64,9 +62,8 @@ export default async function HomePage({
       hoverBorder: "hover:border-amber-500/50",
       btnBg: "bg-amber-600 hover:bg-amber-500",
       href: "/register-stop",
-      badge: canRegister ? "Captura Inmediata" : "Operador / Admin",
-      enabled: canRegister,
-      allowedRolesText: "Operador y Administrador",
+      badge: "Captura Inmediata",
+      allowedRolesText: "Operación y Supervisión",
     },
     {
       id: "dashboard",
@@ -81,8 +78,7 @@ export default async function HomePage({
       btnBg: "bg-rose-600 hover:bg-rose-500",
       href: "/dashboard",
       badge: "Tiempo Real",
-      enabled: true,
-      allowedRolesText: "Todos los perfiles",
+      allowedRolesText: "Métricas de Planta",
     },
     {
       id: "history",
@@ -97,8 +93,7 @@ export default async function HomePage({
       btnBg: "bg-blue-600 hover:bg-blue-500",
       href: "/history",
       badge: "Exportar CSV",
-      enabled: true,
-      allowedRolesText: "Todos los perfiles",
+      allowedRolesText: "Auditoría Histórica",
     },
     {
       id: "catalogs",
@@ -112,11 +107,24 @@ export default async function HomePage({
       hoverBorder: "hover:border-purple-500/50",
       btnBg: "bg-purple-600 hover:bg-purple-500",
       href: "/catalogs",
-      badge: isAdmin ? "Gestión Maestra" : "Solo Administrador",
-      enabled: isAdmin,
+      badge: "Gestión Maestra",
       allowedRolesText: "Solo Administrador",
     },
   ];
+
+  // Matriz estricta de opciones visibles en el Home por rol (orden exacto solicitado por el usuario):
+  const ROLE_HOME_OPTIONS: Record<string, string[]> = {
+    ADMINISTRADOR: ["active-stops", "register-stop", "dashboard", "history", "catalogs"],
+    SUPERVISOR: ["active-stops", "register-stop", "dashboard", "history"],
+    OPERADOR: ["register-stop"],
+    MANTENIMIENTO: ["dashboard", "active-stops", "history"],
+    CALIDAD: ["active-stops", "dashboard"],
+  };
+
+  const allowedIds = ROLE_HOME_OPTIONS[role] || ["dashboard"];
+  const visibleOptions = allowedIds
+    .map((id) => ALL_OPTIONS.find((opt) => opt.id === id))
+    .filter((opt): opt is (typeof ALL_OPTIONS)[0] => Boolean(opt));
 
   return (
     <div className="flex flex-col gap-8 py-2">
@@ -154,7 +162,7 @@ export default async function HomePage({
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-            Has ingresado al sistema como <strong className="text-slate-200 uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700/80">{session.role}</strong>. Selecciona una de las 5 opciones operativas para comenzar a trabajar:
+            Has ingresado al sistema como <strong className="text-slate-200 uppercase font-mono px-1.5 py-0.5 rounded bg-slate-800/80 border border-slate-700/80">{session.role}</strong>. Cuentas con acceso exclusivo a los siguientes módulos operativos según tu perfil:
           </p>
         </div>
 
@@ -169,27 +177,35 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* Grid de las 5 Opciones Principales del Home */}
+      {/* Grid de las Opciones Disponibles para este Rol */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
             <Cpu className="w-5 h-5 text-rose-500" />
-            <span>Módulos de Control del Sistema</span>
+            <span>Módulos Autorizados para tu Perfil</span>
           </h2>
-          <span className="text-xs text-slate-400 font-mono">5 Opciones Disponibles</span>
+          <span className="text-xs text-rose-400 font-mono font-semibold">
+            {visibleOptions.length} {visibleOptions.length === 1 ? "Opción Disponible" : "Opciones Disponibles"}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {HOME_OPTIONS.map((option, index) => {
+        <div className={`grid gap-5 ${
+          visibleOptions.length === 1
+            ? "grid-cols-1 max-w-xl mx-auto w-full"
+            : visibleOptions.length === 2
+            ? "grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto w-full"
+            : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        }`}>
+          {visibleOptions.map((option, index) => {
             const Icon = option.icon;
-            const isFullSpan = index === 4; // La 5ta opción se acomoda limpiamente
+            const isFullSpan = visibleOptions.length === 5 && index === 4;
 
             return (
               <div
                 key={option.id}
                 className={`group rounded-2xl border ${option.borderColor} ${option.hoverBorder} bg-slate-900/60 hover:bg-slate-900/90 p-6 flex flex-col justify-between gap-5 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden ${
                   isFullSpan ? "md:col-span-2 lg:col-span-1" : ""
-                } ${!option.enabled ? "opacity-75" : ""}`}
+                }`}
               >
                 {/* Encabezado de la Tarjeta */}
                 <div className="flex flex-col gap-4 relative z-10">
@@ -198,11 +214,7 @@ export default async function HomePage({
                       <Icon className="w-6 h-6" />
                     </div>
 
-                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${
-                      option.enabled 
-                        ? `${option.bgColor} ${option.color} ${option.borderColor}`
-                        : "bg-slate-800 text-slate-400 border-slate-700"
-                    }`}>
+                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${option.bgColor} ${option.color} ${option.borderColor}`}>
                       {option.badge}
                     </span>
                   </div>
@@ -227,20 +239,13 @@ export default async function HomePage({
                     {option.allowedRolesText}
                   </span>
 
-                  {option.enabled ? (
-                    <Link
-                      href={option.href}
-                      className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl ${option.btnBg} text-white transition shadow-md hover:scale-[1.02]`}
-                    >
-                      <span>Entrar</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  ) : (
-                    <div className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400">
-                      <Lock className="w-3 h-3 text-slate-500" />
-                      <span>Restringido</span>
-                    </div>
-                  )}
+                  <Link
+                    href={option.href}
+                    className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl ${option.btnBg} text-white transition shadow-md hover:scale-[1.02]`}
+                  >
+                    <span>Entrar</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
             );
@@ -254,18 +259,15 @@ export default async function HomePage({
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>Sistema verificado con control de acceso por roles (RBAC) • STOPControl 2.0</span>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="hover:text-white transition underline underline-offset-4">
-            Dashboard
-          </Link>
-          <span>•</span>
-          <Link href="/active-stops" className="hover:text-white transition underline underline-offset-4">
-            Paros Activos
-          </Link>
-          <span>•</span>
-          <Link href="/history" className="hover:text-white transition underline underline-offset-4">
-            Historial
-          </Link>
+        <div className="flex items-center gap-4 flex-wrap">
+          {visibleOptions.map((opt, i) => (
+            <span key={opt.id} className="inline-flex items-center gap-4">
+              {i > 0 && <span>•</span>}
+              <Link href={opt.href} className="hover:text-white transition underline underline-offset-4">
+                {opt.title}
+              </Link>
+            </span>
+          ))}
         </div>
       </div>
     </div>

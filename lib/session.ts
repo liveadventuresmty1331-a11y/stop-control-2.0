@@ -52,6 +52,48 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 }
 
 /**
+ * Rutas permitidas por rol según política RBAC solicitada:
+ * - Administrador: Paros Activos, Registrar Paro, Dashboard, Historial, Catálogos (+ Users)
+ * - Supervisor: Paros Activos, Registrar Paro, Dashboard, Historial
+ * - Operador: Registrar Paro
+ * - Mantenimiento: Dashboard, Paros Activos, Historial
+ * - Calidad: Paros Activos, Dashboard
+ */
+export const ROLE_ALLOWED_ROUTES: Record<RoleName, string[]> = {
+  ADMINISTRADOR: [
+    "/home",
+    "/active-stops",
+    "/register-stop",
+    "/dashboard",
+    "/history",
+    "/catalogs",
+    "/users",
+  ],
+  SUPERVISOR: [
+    "/home",
+    "/active-stops",
+    "/register-stop",
+    "/dashboard",
+    "/history",
+  ],
+  OPERADOR: [
+    "/home",
+    "/register-stop",
+  ],
+  MANTENIMIENTO: [
+    "/home",
+    "/dashboard",
+    "/active-stops",
+    "/history",
+  ],
+  CALIDAD: [
+    "/home",
+    "/active-stops",
+    "/dashboard",
+  ],
+};
+
+/**
  * Matriz de Permisos por Rol
  */
 export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
@@ -66,18 +108,16 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     "users:manage",
     "metrics:view",
   ],
-  OPERADOR: [
-    "dashboard:view",
+  SUPERVISOR: [
     "active-stops:view",
     "stops:create",
     "stops:finish",
-    "history:view:own",
-  ],
-  SUPERVISOR: [
     "dashboard:view",
-    "active-stops:view",
     "history:view",
     "metrics:view",
+  ],
+  OPERADOR: [
+    "stops:create",
   ],
   MANTENIMIENTO: [
     "dashboard:view",
@@ -87,9 +127,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     "metrics:view",
   ],
   CALIDAD: [
-    "dashboard:view",
     "active-stops:view",
-    "history:view",
+    "dashboard:view",
     "metrics:view",
   ],
 };
@@ -100,25 +139,11 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
 export function canRoleAccessRoute(role: RoleName, pathname: string): boolean {
   if (role === "ADMINISTRADOR") return true;
 
-  if (pathname.startsWith("/catalogs") || pathname.startsWith("/users")) {
-    return false;
-  }
+  // El Home y la API de autenticación siempre están disponibles para cualquier usuario autenticado
+  if (pathname === "/home" || pathname.startsWith("/home/")) return true;
 
-  if (pathname.startsWith("/dashboard")) {
-    return true; // Todos los roles autenticados pueden ingresar al Dashboard según su alcance RBAC
-  }
-
-  if (pathname.startsWith("/register-stop")) {
-    return role === "OPERADOR";
-  }
-
-  if (pathname.startsWith("/active-stops")) {
-    return true; // Todos los roles pueden consultar paros activos
-  }
-
-  if (pathname.startsWith("/history")) {
-    return true; // Todos pueden ver historial (operador filtrado a sus propios paros)
-  }
-
-  return true;
+  const allowedRoutes = ROLE_ALLOWED_ROUTES[role] || ["/home"];
+  return allowedRoutes.some(
+    (allowed) => pathname === allowed || pathname.startsWith(allowed + "/")
+  );
 }
